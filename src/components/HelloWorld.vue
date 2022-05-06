@@ -111,8 +111,7 @@ export default {
       fetch(`https://wordsapiv1.p.rapidapi.com/words/${word}`, {
         method: "GET",
         headers: {
-          "x-rapidapi-key":
-            "dcfd1dec35msh39127802e6a5510p136b97jsnd9802a525c00",
+          "x-rapidapi-key": `${process.env.VUE_APP_API_KEY}`,
           "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
         },
       })
