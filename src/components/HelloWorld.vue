@@ -1,58 +1,161 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div>
+    <button @click="partOfSpeech">Parts of Speech</button>
+    <button @click="syllableQuestion">Syllable Count</button>
+    <button @click="reset">Close/Reset</button>
+  </div>
+
+  <!-- THIS IS PARTS OF SPEECH -->
+  <div class="questionCont" v-if="partOfSpeechQ">
+    <div>
+      <h1>{{ prompt }}</h1>
+    </div>
+    <div class="wordBank">
+      <button v-for="(word, index) in this.wordBank" :key="index">
+        {{ word }}
+      </button>
+      <button @click="checkAnswer('None of the Above')">
+        None of the Above
+      </button>
+    </div>
+  </div>
+
+  <!-- THIS IS FOR SYLLABLES -->
+  <div class="questionCont" v-if="syllableQ">
+    <div>
+      <h1>{{ prompt }}</h1>
+    </div>
+    <div class="choiceBank">
+      <button @click="checkSyllable(1)">1</button>
+      <button @click="checkSyllable(2)">2</button>
+      <button @click="checkSyllable(3)">3</button>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
+  data() {
+    return {
+      partOfSpeechQ: false,
+      syllableQ: false,
+
+      prompt: "",
+      target: "",
+
+      partsOfSpeech: [],
+      wordBank: [],
+    };
+  },
+  components: {},
+  methods: {
+    reset() {
+      this.partOfSpeechQ = false;
+      this.syllableQ = false;
+
+      this.prompt = "";
+      this.target = "";
+
+      this.partsOfSpeech = [];
+      this.wordBank = [];
+    },
+    partOfSpeech() {
+      let randomWords = require("random-words");
+      let pOfSpeech = ["noun", "verb", "adjective", "adverb"];
+
+      this.partOfSpeechQ = true;
+      this.target = pOfSpeech[Math.floor(Math.random() * pOfSpeech.length)];
+      this.prompt = `Which of these words is/can be a(n) ${this.target}?`;
+
+      this.wordBank = randomWords(4);
+    },
+    checkAnswer(word) {
+      if (word !== "None of the Above") {
+        fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+          .then((response) => response.json())
+          .then((data) => {
+            for (let a = 0; a < data[0].meanings.length; a++) {
+              if (data[0].meanings[a].partOfSpeech === this.target) {
+                console.log("hit");
+                this.score += 100;
+                break;
+              }
+            }
+          });
+      } else {
+        for (let a = 0; a < this.wordBank.length; a++) {
+          fetch(
+            `https://api.dictionaryapi.dev/api/v2/entries/en/${this.wordBank[a]}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              for (let a = 0; a < data[0].meanings.length; a++) {
+                if (data[0].meanings[a].partOfSpeech === this.target) {
+                  console.log(
+                    `One of these words can be/is a(n) ${this.target}`
+                  );
+                  break;
+                }
+              }
+            });
+        }
+        console.log("Correct none of the above");
+      }
+    },
+    syllableQuestion() {
+      this.syllableQ = !this.syllableQ;
+      let randomWords = require("random-words");
+      let word = randomWords();
+      this.prompt = `How many syllables does ${word.toUpperCase()} have?`;
+
+      fetch(`https://wordsapiv1.p.rapidapi.com/words/${word}`, {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key":
+            "dcfd1dec35msh39127802e6a5510p136b97jsnd9802a525c00",
+          "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => (this.target = data.syllables.count));
+    },
+    checkSyllable(number) {
+      console.log(this.target === number);
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.questionCont {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  width: 30%;
+  height: 260px;
+  border-style: solid;
+  padding: 20px;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+.wordBank {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+.wordBank button {
+  width: 200px;
+  font-size: 20px;
+  padding: 5px;
+  margin: 10px;
 }
-a {
-  color: #42b983;
+.choiceBank {
+  display: flex;
+}
+.choiceBank button {
+  width: 150px;
+  padding: 5px;
+  margin: 10px;
 }
 </style>
