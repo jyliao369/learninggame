@@ -4,6 +4,7 @@
     <div class="class">
       <button @click="startBattle">battle</button>
     </div>
+
     <div class="heroInfoCont">
       <div class="heroInfo">
         <h2>{{ hero.name }}</h2>
@@ -19,7 +20,7 @@
       </div>
     </div>
 
-    <!-- THIS IS THE PROMPT -->
+    <!-- THIS IS THE PROMPT/TEXTBOX -->
     <div class="textBoxCont" v-if="textBoxCont">
       <div class="textBox">
         <!-- SYLLABLE COUNT FOR ATTACK -->
@@ -31,9 +32,6 @@
             <button @click="checkSyllable(1)">1</button>
             <button @click="checkSyllable(2)">2</button>
             <button @click="checkSyllable(3)">3</button>
-          </div>
-          <div>
-            <h3>{{ answer }}</h3>
           </div>
         </div>
 
@@ -59,23 +57,15 @@
             >
               {{ word }}
             </button>
-            <button @click="checkAnswer('None of the Above')">
-              None of the Above
-            </button>
-          </div>
-          <div>
-            <h2>
-              {{ answer }}
-            </h2>
           </div>
         </div>
 
         <!-- THIS IS THE ACTION BAR -->
         <div class="actionBar">
           <button @click="syllableQuestion">Attack</button>
-          <button>Skills</button>
+          <button @click="partOfSpeech">Skills</button>
           <button @click="mathQuestion">Magic</button>
-          <button>Flee</button>
+          <button @click="reset">Flee</button>
         </div>
       </div>
     </div>
@@ -100,8 +90,12 @@ export default {
 
       enemies: [
         { name: "slime", hp: 10 },
+        { name: "mushroom", hp: 10 },
+        { name: "red slime", hp: 15 },
         { name: "bat", hp: 15 },
+        { name: "white rabbit", hp: 15 },
         { name: "wolf", hp: 20 },
+        { name: "vulture", hp: 20 },
       ],
       hero: {
         name: "hero",
@@ -125,50 +119,36 @@ export default {
       this.wordBank = [];
     },
     partOfSpeech() {
+      this.partOfSpeechQ = !this.partOfSpeechQ;
       let randomWords = require("random-words");
       let pOfSpeech = ["noun", "verb", "adjective", "adverb"];
-
-      this.partOfSpeechQ = true;
       this.target = pOfSpeech[Math.floor(Math.random() * pOfSpeech.length)];
       this.prompt = `Which of these words is/can be a(n) ${this.target}?`;
 
       this.wordBank = randomWords(4);
     },
     checkAnswer(word) {
-      if (word !== "None of the Above") {
-        fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
-          .then((response) => response.json())
-          .then((data) => {
+      fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+        .then((response) => response.json())
+        .then((data) =>
+          // (data) => console.log(data[0].meanings)
+          {
             for (let a = 0; a < data[0].meanings.length; a++) {
               if (data[0].meanings[a].partOfSpeech === this.target) {
-                this.answer = "Correct";
                 this.reset();
-                this.battle();
+                this.battle("Correct");
                 break;
-              } else {
-                this.answer = "Incorrect";
+              }
+              if (a === data[0].meanings.length - 1) {
+                this.reset();
+                this.battle("Incorrect");
+                break;
               }
             }
-          });
-      } else {
-        for (let a = 0; a < this.wordBank.length; a++) {
-          fetch(
-            `https://api.dictionaryapi.dev/api/v2/entries/en/${this.wordBank[a]}`
-          )
-            .then((response) => response.json())
-            .then((data) => {
-              for (let a = 0; a < data[0].meanings.length; a++) {
-                if (data[0].meanings[a].partOfSpeech === this.target) {
-                  this.answer = `One of these words can be/is a(n) ${this.target}`;
-                  break;
-                }
-              }
-            });
-        }
-      }
+          }
+        );
     },
     syllableQuestion() {
-      this.reset();
       this.syllableQ = !this.syllableQ;
       let randomWords = require("random-words");
       let word = randomWords();
@@ -197,7 +177,6 @@ export default {
       }
     },
     mathQuestion() {
-      this.reset();
       this.MathQ = !this.MathQ;
       let topic = Math.floor(Math.random() * 4);
       let valueA = Math.floor(Math.random() * 9);
@@ -237,15 +216,13 @@ export default {
         this.enemyTeam[0].hp -= 5;
       } else {
         console.log(
-          `${this.enemyTeam.name} does <5 damage> damage to ${this.hero.name}`
+          `${this.enemyTeam[0].name} does <5 damage> damage to ${this.hero.name}`
         );
         this.hero.hp -= 5;
       }
       this.checkIfDead();
     },
     checkIfDead() {
-      console.log("hello here is the bug");
-      console.log(this.enemyTeam[0].hp);
       if (this.enemyTeam[0].hp <= 0) {
         this.enemyTeam.pop();
         if (this.enemyTeam.length === 0) {
@@ -254,10 +231,13 @@ export default {
       }
     },
     startBattle() {
-      this.enemyTeam = [];
-      this.enemyTeam.push(
-        this.enemies[Math.floor(Math.random() * this.enemies.length)]
+      let team = JSON.parse(
+        JSON.stringify(
+          this.enemies[Math.floor(Math.random() * this.enemies.length)]
+        )
       );
+      this.enemyTeam = [team];
+
       this.textBoxCont = true;
     },
   },
