@@ -1,34 +1,83 @@
 <template>
-  <div>
-    <button @click="partOfSpeech">Parts of Speech</button>
-    <button @click="syllableQuestion">Syllable Count</button>
-    <button @click="reset">Close/Reset</button>
-  </div>
+  <div class="overCont">
+    <!-- THIS HERO STATUS -->
+    <div class="class">
+      <button @click="startBattle">battle</button>
+    </div>
+    <div class="heroInfoCont">
+      <div class="heroInfo">
+        <h2>{{ hero.name }}</h2>
+        <h2>HP: {{ hero.hp }}</h2>
+      </div>
+    </div>
 
-  <!-- THIS IS PARTS OF SPEECH -->
-  <div class="questionCont" v-if="partOfSpeechQ">
-    <div>
-      <h1>{{ prompt }}</h1>
+    <!-- THIS BADGUY STATUS -->
+    <div class="enemyInfoCont">
+      <div class="enemyInfo" v-for="(enemy, index) in enemyTeam" :key="index">
+        <h2>{{ enemy.name }}</h2>
+        <h2>HP: {{ enemy.hp }}</h2>
+      </div>
     </div>
-    <div class="wordBank">
-      <button v-for="(word, index) in this.wordBank" :key="index">
-        {{ word }}
-      </button>
-      <button @click="checkAnswer('None of the Above')">
-        None of the Above
-      </button>
-    </div>
-  </div>
 
-  <!-- THIS IS FOR SYLLABLES -->
-  <div class="questionCont" v-if="syllableQ">
-    <div>
-      <h1>{{ prompt }}</h1>
-    </div>
-    <div class="choiceBank">
-      <button @click="checkSyllable(1)">1</button>
-      <button @click="checkSyllable(2)">2</button>
-      <button @click="checkSyllable(3)">3</button>
+    <!-- THIS IS THE PROMPT -->
+    <div class="textBoxCont" v-if="textBoxCont">
+      <div class="textBox">
+        <!-- SYLLABLE COUNT FOR ATTACK -->
+        <div class="questionCont" v-if="syllableQ">
+          <div>
+            <h1>{{ prompt }}</h1>
+          </div>
+          <div class="choiceBank">
+            <button @click="checkSyllable(1)">1</button>
+            <button @click="checkSyllable(2)">2</button>
+            <button @click="checkSyllable(3)">3</button>
+          </div>
+          <div>
+            <h3>{{ answer }}</h3>
+          </div>
+        </div>
+
+        <!-- ADDITION/SUBTRACTION COUNT FOR MAGIC -->
+        <div class="questionCont" v-if="MathQ">
+          <div class="mathAnswer">
+            <h2>{{ prompt }}</h2>
+            <input input v-model="answer" type="number" placeholder="Answer" />
+            <button @click="checkMathQuestion">Check</button>
+          </div>
+        </div>
+
+        <!-- PARTSOFSPEECH FOR SKILLS -->
+        <div class="questionCont" v-if="partOfSpeechQ">
+          <div>
+            <h1>{{ prompt }}</h1>
+          </div>
+          <div class="wordBank">
+            <button
+              v-for="(word, index) in this.wordBank"
+              :key="index"
+              @click="checkAnswer(word)"
+            >
+              {{ word }}
+            </button>
+            <button @click="checkAnswer('None of the Above')">
+              None of the Above
+            </button>
+          </div>
+          <div>
+            <h2>
+              {{ answer }}
+            </h2>
+          </div>
+        </div>
+
+        <!-- THIS IS THE ACTION BAR -->
+        <div class="actionBar">
+          <button @click="syllableQuestion">Attack</button>
+          <button>Skills</button>
+          <button @click="mathQuestion">Magic</button>
+          <button>Flee</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -39,12 +88,26 @@ export default {
     return {
       partOfSpeechQ: false,
       syllableQ: false,
+      MathQ: false,
 
+      textBoxCont: false,
       prompt: "",
       target: "",
+      answer: "",
 
       partsOfSpeech: [],
       wordBank: [],
+
+      enemies: [
+        { name: "slime", hp: 10 },
+        { name: "bat", hp: 15 },
+        { name: "wolf", hp: 20 },
+      ],
+      hero: {
+        name: "hero",
+        hp: 20,
+      },
+      enemyTeam: [],
     };
   },
   components: {},
@@ -52,9 +115,11 @@ export default {
     reset() {
       this.partOfSpeechQ = false;
       this.syllableQ = false;
+      this.additionQ = false;
 
       this.prompt = "";
       this.target = "";
+      this.answer = "";
 
       this.partsOfSpeech = [];
       this.wordBank = [];
@@ -76,9 +141,12 @@ export default {
           .then((data) => {
             for (let a = 0; a < data[0].meanings.length; a++) {
               if (data[0].meanings[a].partOfSpeech === this.target) {
-                console.log("hit");
-                this.score += 100;
+                this.answer = "Correct";
+                this.reset();
+                this.battle();
                 break;
+              } else {
+                this.answer = "Incorrect";
               }
             }
           });
@@ -91,18 +159,16 @@ export default {
             .then((data) => {
               for (let a = 0; a < data[0].meanings.length; a++) {
                 if (data[0].meanings[a].partOfSpeech === this.target) {
-                  console.log(
-                    `One of these words can be/is a(n) ${this.target}`
-                  );
+                  this.answer = `One of these words can be/is a(n) ${this.target}`;
                   break;
                 }
               }
             });
         }
-        console.log("Correct none of the above");
       }
     },
     syllableQuestion() {
+      this.reset();
       this.syllableQ = !this.syllableQ;
       let randomWords = require("random-words");
       let word = randomWords();
@@ -111,15 +177,88 @@ export default {
       fetch(`https://wordsapiv1.p.rapidapi.com/words/${word}`, {
         method: "GET",
         headers: {
-          "x-rapidapi-key": `${process.env.VUE_APP_API_KEY}`,
+          "x-rapidapi-key": `dcfd1dec35msh39127802e6a5510p136b97jsnd9802a525c00`,
           "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
         },
       })
         .then((response) => response.json())
+        // .then((data) => console.log(data));
         .then((data) => (this.target = data.syllables.count));
     },
     checkSyllable(number) {
-      console.log(this.target === number);
+      if (this.target === number) {
+        this.answer = "Correct";
+        this.reset();
+        this.battle("Correct");
+      } else {
+        this.answer = "Incorrect";
+        this.reset();
+        this.battle("Incorrect");
+      }
+    },
+    mathQuestion() {
+      this.reset();
+      this.MathQ = !this.MathQ;
+      let topic = Math.floor(Math.random() * 4);
+      let valueA = Math.floor(Math.random() * 9);
+      let valueB = Math.floor(Math.random() * 9);
+
+      if (topic === 0) {
+        this.prompt = valueA + " + " + valueB + " = ";
+      } else if (topic === 1) {
+        this.prompt = valueA + " - " + valueB + " = ";
+      } else if (topic === 2) {
+        this.prompt = valueA + " * " + valueB + " = ";
+      } else if (topic === 3) {
+        this.prompt = valueA + " / " + valueB + " = ";
+      }
+    },
+    checkMathQuestion() {
+      console.log("checking");
+      let mathAnswer = eval(
+        this.prompt
+          .split(" ")
+          .slice(0, this.prompt.split(" ").length - 2)
+          .join("")
+      );
+      if (this.answer === mathAnswer) {
+        this.MathQ = !this.MathQ;
+        this.battle("Correct");
+      } else {
+        this.MathQ = !this.MathQ;
+        this.battle("Incorrect");
+      }
+    },
+    battle(answer) {
+      if (answer === "Correct") {
+        console.log(
+          `${this.hero.name} does <5 damage> damage to ${this.enemies[0].name}`
+        );
+        this.enemyTeam[0].hp -= 5;
+      } else {
+        console.log(
+          `${this.enemyTeam.name} does <5 damage> damage to ${this.hero.name}`
+        );
+        this.hero.hp -= 5;
+      }
+      this.checkIfDead();
+    },
+    checkIfDead() {
+      console.log("hello here is the bug");
+      console.log(this.enemyTeam[0].hp);
+      if (this.enemyTeam[0].hp <= 0) {
+        this.enemyTeam.pop();
+        if (this.enemyTeam.length === 0) {
+          this.textBoxCont = false;
+        }
+      }
+    },
+    startBattle() {
+      this.enemyTeam = [];
+      this.enemyTeam.push(
+        this.enemies[Math.floor(Math.random() * this.enemies.length)]
+      );
+      this.textBoxCont = true;
     },
   },
 };
@@ -127,15 +266,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.questionCont {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
-  width: 30%;
-  height: 260px;
-  border-style: solid;
-  padding: 20px;
+.class {
+  position: absolute;
+  z-index: 9;
 }
 .wordBank {
   display: flex;
@@ -149,6 +282,54 @@ export default {
   padding: 5px;
   margin: 10px;
 }
+
+.heroInfoCont {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+}
+.enemyInfoCont {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+}
+.heroInfo,
+.enemyInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-style: solid;
+  padding: 25px;
+}
+.textBoxCont {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+}
+.textBox {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 900px;
+  border-style: solid;
+}
+.questionCont {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
 .choiceBank {
   display: flex;
 }
@@ -156,5 +337,20 @@ export default {
   width: 150px;
   padding: 5px;
   margin: 10px;
+}
+.mathAnswer {
+  display: flex;
+  flex-direction: row;
+}
+.actionBar {
+  width: 25%;
+}
+.actionBar button {
+  width: 225px;
+  font-size: 25px;
+  padding: 5px;
+  padding-left: 15px;
+  padding-right: 15px;
+  cursor: pointer;
 }
 </style>
