@@ -19,7 +19,7 @@ export default {
   components: {},
   methods: {
     openCity() {
-      this.$emit("close");
+      this.$emit("open");
     },
   },
 };

@@ -1,4 +1,26 @@
 <template>
+  <div class="heroInfoCont">
+    <div>
+      <div class="heroInfo">
+        <h2>{{ heroInfo.name }}</h2>
+        <h2>HP: {{ heroInfo.hp }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="enemyInfoCont">
+    <div
+      class="enemyInfoBorder"
+      v-for="(enemy, index) in enemyTeam"
+      :key="index"
+    >
+      <div class="enemyInfo">
+        <h2>{{ enemy.name }}</h2>
+        <h2>HP: {{ enemy.hp }}</h2>
+      </div>
+    </div>
+  </div>
+
   <div class="textBoxCont">
     <div class="textBoxBorder">
       <div class="textBox">
@@ -8,9 +30,10 @@
             <h2>{{ prompt }}</h2>
           </div>
           <div class="choiceBank">
-            <button @click="checkSyllable(1)">1</button>
-            <button @click="checkSyllable(2)">2</button>
-            <button @click="checkSyllable(3)">3</button>
+            <button @click="checkAttack(1)">1</button>
+            <button @click="checkAttack(2)">2</button>
+            <button @click="checkAttack(3)">3</button>
+            <button @click="checkAttack(4)">4</button>
           </div>
         </div>
 
@@ -45,6 +68,7 @@
           <button @click="skill">Skills</button>
           <button @click="magic">Magic</button>
           <button @click="flee">Flee</button>
+          <button @click="test">test</button>
         </div>
       </div>
     </div>
@@ -53,7 +77,7 @@
 
 <script>
 export default {
-  props: [],
+  props: ["heroInfo"],
   data() {
     return {
       showSyllableQ: false,
@@ -61,6 +85,19 @@ export default {
       showMathQ: false,
 
       prompt: "",
+      wordBank: [],
+      target: "",
+
+      enemyTeam: [],
+      enemies: [
+        { name: "slime", hp: 10 },
+        { name: "mushroom", hp: 10 },
+        { name: "red slime", hp: 15 },
+        { name: "bat", hp: 15 },
+        { name: "white rabbit", hp: 15 },
+        { name: "wolf", hp: 20 },
+        { name: "vulture", hp: 20 },
+      ],
     };
   },
   components: {},
@@ -69,12 +106,39 @@ export default {
       let randomWords = require("random-words");
       let word = randomWords();
       this.prompt = `How many syllables does ${word.toUpperCase()} have?`;
+      fetch(`https://wordsapiv1.p.rapidapi.com/words/${word}`, {
+        method: "GET",
+        headers: {
+          "x-rapidapi-key": `${process.env.VUE_APP_WORDAPI_KEY}`,
+          "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        },
+      })
+        .then((response) => response.json())
+        // .then((data) => console.log(data));
+        .then((data) => (this.target = data.syllables.count));
 
       this.showSyllableQ = !this.showSyllableQ;
       this.showPartOfSpeechQ = false;
       this.showMathQ = false;
     },
+    checkAttack(number) {
+      if (this.target === number) {
+        console.log("Correct");
+        this.showSyllableQ = !this.showSyllableQ;
+        this.$emit("enemyDamage");
+      } else {
+        console.log("Incorrect");
+        this.showSyllableQ = !this.showSyllableQ;
+      }
+    },
     skill() {
+      let randomWords = require("random-words");
+      this.wordBank = randomWords(4);
+      let pOfSpeech = ["noun", "verb", "adjective", "adverb"];
+      this.prompt = `Which of these words is/can be a(n) ${
+        pOfSpeech[Math.floor(Math.random() * pOfSpeech.length)]
+      }?`;
+
       this.showPartOfSpeechQ = !this.showPartOfSpeechQ;
       this.showSyllableQ = false;
       this.showMathQ = false;
@@ -103,11 +167,52 @@ export default {
     // let randomWords = require("random-words");
     // let word = randomWords();
     // this.prompt = `How many syllables does ${word.toUpperCase()} have?`;
+    this.enemyTeam = [
+      this.enemies[Math.floor(Math.random() * this.enemies.length)],
+    ];
   },
 };
 </script>
 
 <style scoped>
+.heroInfoCont {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+}
+.heroInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-style: solid;
+  padding: 25px;
+  background: black;
+  color: white;
+}
+.enemyInfoCont {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+}
+.enemyInfoBorder {
+  background: white;
+}
+.enemyInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-style: solid;
+  padding: 25px;
+  background: black;
+  color: white;
+}
+
 .textBoxCont {
   display: flex;
   justify-content: center;
@@ -155,7 +260,7 @@ export default {
   display: flex;
 }
 .choiceBank button {
-  width: 150px;
+  width: 120px;
   padding: 5px;
   margin: 10px;
 }

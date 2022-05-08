@@ -10,6 +10,7 @@
         <h2>HP: {{ enemy.hp }}</h2>
       </div>
     </div>
+    <button @click="damage">hello</button>
   </div>
 </template>
 
@@ -31,14 +32,22 @@ export default {
     };
   },
   components: {},
-  methods: {},
+  methods: {
+    // damage() {
+    //   console.log("hello");
+    //   console.log(this.enemyTeam[0].hp);
+    //   this.enemyTeam[0].hp -= 5;
+    // },
+  },
   created() {
-    let team = JSON.parse(
-      JSON.stringify(
-        this.enemies[Math.floor(Math.random() * this.enemies.length)]
-      )
-    );
-    this.enemyTeam = [team];
+    // let team = JSON.parse(
+    //   JSON.stringify(
+    //     this.enemies[Math.floor(Math.random() * this.enemies.length)]
+    //   )
+    // );
+    this.enemyTeam = [
+      this.enemies[Math.floor(Math.random() * this.enemies.length)],
+    ];
   },
 };
 </script>

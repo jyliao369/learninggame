@@ -1,15 +1,9 @@
 <template>
   <div class="overCont">
     <!-- NOTE THE FARTHER DOWN THE CLOSER TO USER -->
-    <div class="class">
-      <button @click="showEnemyInfo">battle</button>
-      <button @click="showInvenBag">inventory</button>
-      <button @click="showHeroInfo">stats</button>
-      <button @click="reset">back</button>
-    </div>
 
     <!-- THIS IS THE CITY MAP -->
-    <CityMap v-if="showCityMap" @close="showMap" />
+    <CityMap v-if="showCityMap" @open="showMap" />
 
     <!-- MAIN WINDOWS FOR TOWNS AND LOCATIONS  -->
     <MainWindow v-if="showMainWindow" />
@@ -18,13 +12,20 @@
     <InvenBag v-if="showInventory" />
 
     <!-- HERO INFO -->
-    <HeroInfo v-if="showHeroStats" v-bind:heroInfo="this.hero" />
+    <!-- <HeroInfo v-if="showHeroStats" v-bind:heroInfo="this.hero" /> -->
 
     <!-- ENEMY INFO -->
-    <EnemyInfo v-if="showEnemyStats" />
+    <!-- <EnemyInfo v-if="showEnemyStats" /> -->
 
     <!-- TEXTBOX -->
-    <TextBox v-if="showTextBox" />
+    <TextBox v-if="showTextBox" v-bind:heroInfo="this.hero" />
+
+    <div class="class">
+      <button @click="showEnemyInfo">battle</button>
+      <button @click="showInvenBag">inventory</button>
+      <button @click="showHeroInfo">stats</button>
+      <button @click="reset">back</button>
+    </div>
   </div>
 </template>
 
@@ -32,8 +33,8 @@
 import InvenBag from "./InvenBag.vue";
 import CityMap from "./CityMap.vue";
 import MainWindow from "./MainWindow.vue";
-import HeroInfo from "./HeroInfo.vue";
-import EnemyInfo from "./EnemyInfo.vue";
+// import HeroInfo from "./HeroInfo.vue";
+// import EnemyInfo from "./EnemyInfo.vue";
 import TextBox from "./TextBox.vue";
 
 export default {
@@ -56,8 +57,8 @@ export default {
     InvenBag,
     CityMap,
     MainWindow,
-    HeroInfo,
-    EnemyInfo,
+    // HeroInfo,
+    // EnemyInfo,
     TextBox,
   },
   methods: {
@@ -76,8 +77,6 @@ export default {
       this.showHeroStats = !this.showHeroStats;
     },
     showEnemyInfo() {
-      this.showHeroStats = !this.showHeroStats;
-      this.showEnemyStats = !this.showEnemyStats;
       this.showTextBox = !this.showTextBox;
       this.showCityMap = !this.showCityMap;
     },
