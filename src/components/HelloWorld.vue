@@ -27,7 +27,7 @@
     </div>
 
     <!-- THIS BADGUY STATUS -->
-    <div class="enemyInfoCont">
+    <div class="enemyInfoCont" v-if="showEnemyStats">
       <div
         class="enemyInfoBorder"
         v-for="(enemy, index) in enemyTeam"
@@ -130,6 +130,7 @@ export default {
       showInventory: false,
       showStatistics: false,
       showMainWindow: false,
+      showEnemyStats: false,
       showMap: true,
       prompt: "",
       target: "",
@@ -168,6 +169,7 @@ export default {
     },
     flee() {
       this.textBoxCont = !this.textBoxCont;
+      this.showMap = !this.showMap;
       this.showStatistics = false;
       this.partOfSpeechQ = false;
       this.syllableQ = false;
@@ -312,6 +314,8 @@ export default {
       );
       this.enemyTeam = [team];
 
+      this.showMap = !this.showMap;
+      this.showEnemyStats = true;
       this.showStatistics = true;
       this.textBoxCont = true;
     },
