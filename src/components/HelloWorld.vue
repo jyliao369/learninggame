@@ -2,6 +2,7 @@
   <div class="overCont">
     <!-- THIS HERO STATUS -->
     <div class="class">
+      <h1>{{ test }}</h1>
       <button @click="startBattle">battle</button>
       <button @click="showBag">inventory</button>
       <button @click="showStats">stats</button>
@@ -122,6 +123,7 @@
 export default {
   data() {
     return {
+      test: process.env.VUE_APP_WORDAPI_KEY,
       partOfSpeechQ: false,
       syllableQ: false,
       MathQ: false,
@@ -381,8 +383,7 @@ export default {
   border-width: 2px;
   background: white;
 }
-.mainWindow {
-}
+
 .inventoryCont {
   display: flex;
   align-items: center;
