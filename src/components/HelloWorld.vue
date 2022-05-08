@@ -1,34 +1,33 @@
 <template>
   <div class="overCont">
-    <!-- THIS HERO STATUS -->
-    <div class="class">
-      <h1>{{ test }}</h1>
+    <!-- <div class="class">
       <button @click="startBattle">battle</button>
       <button @click="showBag">inventory</button>
       <button @click="showStats">stats</button>
       <button @click="showMain">back</button>
-    </div>
+    </div> -->
 
-    <div class="heroInfoCont" v-if="showStatistics">
+    <!-- THIS HERO STATUS -->
+    <!-- <div class="heroInfoCont" v-if="showStatistics">
       <div>
         <div class="heroInfo">
           <h2>{{ hero.name }}</h2>
           <h2>HP: {{ hero.hp }}</h2>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- THIS IS THE WINDOWS FOR TOWNS AND STUFF -->
-    <div class="mainWindowCont" v-if="showMainWindow">
+    <!-- <div class="mainWindowCont" v-if="showMainWindow">
       <div class="mainWindowBorder">
         <div class="mainWindow">
           <h1>Main Window</h1>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- THIS BADGUY STATUS -->
-    <div class="enemyInfoCont" v-if="showEnemyStats">
+    <!-- <div class="enemyInfoCont" v-if="showEnemyStats">
       <div
         class="enemyInfoBorder"
         v-for="(enemy, index) in enemyTeam"
@@ -39,15 +38,15 @@
           <h2>HP: {{ enemy.hp }}</h2>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <div class="inventoryCont" v-if="showInventory">
+    <!-- <div class="inventoryCont" v-if="showInventory">
       <div class="inventoryBorder">
         <div class="inventory">
           <h2>Inventory</h2>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- THIS IS THE PROMPT/TEXTBOX -->
     <div class="textBoxCont" v-if="textBoxCont">
@@ -107,7 +106,7 @@
     </div>
 
     <!-- CITY MARKERS -->
-    <div class="cityMapCont" v-if="showMap">
+    <!-- <div class="cityMapCont" v-if="showMap">
       <div class="cityMap">
         <div @click="showMain" class="city"></div>
         <div @click="showMain" class="city1"></div>
@@ -115,7 +114,7 @@
         <div @click="showMain" class="city3"></div>
         <div @click="showMain" class="city4"></div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -123,7 +122,6 @@
 export default {
   data() {
     return {
-      test: process.env.VUE_APP_WORDAPI_KEY,
       partOfSpeechQ: false,
       syllableQ: false,
       MathQ: false,
@@ -233,7 +231,7 @@ export default {
       fetch(`https://wordsapiv1.p.rapidapi.com/words/${word}`, {
         method: "GET",
         headers: {
-          "x-rapidapi-key": `dcfd1dec35msh39127802e6a5510p136b97jsnd9802a525c00`,
+          "x-rapidapi-key": `${process.env.VUE_APP_WORDAPI_KEY}`,
           "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
         },
       })

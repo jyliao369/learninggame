@@ -1,14 +1,17 @@
 <template>
-  <HelloWorld />
+  <!-- <HelloWorld /> -->
+  <OverWorld />
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+// import HelloWorld from "./components/HelloWorld.vue";
+import OverWorld from "./components/OverWorld.vue";
 
 export default {
   name: "App",
   components: {
-    HelloWorld,
+    // HelloWorld,
+    OverWorld,
   },
 };
 </script>
