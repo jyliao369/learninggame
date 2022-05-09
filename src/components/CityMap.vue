@@ -1,26 +1,77 @@
 <template>
-  <!-- v-if="showMap" -->
   <div class="cityMapCont">
     <div class="cityMap">
-      <button @click="openCity" class="city"></button>
-      <button @click="openCity" class="city1"></button>
-      <button @click="openCity" class="city2"></button>
-      <button @click="openCity" class="city3"></button>
-      <button @click="openCity" class="city4"></button>
+      <button @click="showCity(citites[0])" class="city"></button>
+      <button @click="showCity(citites[1])" class="city1"></button>
+      <button @click="showCity(citites[2])" class="city2"></button>
+      <button @click="showCity(citites[3])" class="city3"></button>
+      <button @click="showCity(citites[4])" class="city4"></button>
     </div>
   </div>
+
+  <MainWindow
+    @leaveCity="showCity"
+    v-if="openCity"
+    v-bind:cityInfo="this.currentCity"
+  />
 </template>
 
 <script>
+import MainWindow from "../components/MainWindow.vue";
+
 export default {
   data() {
-    return {};
+    return {
+      openCity: false,
+
+      currentCity: {},
+      citites: [
+        {
+          name: "TerraFirma",
+          shopItem: ["potion", "antidote"],
+          shopArmor: ["wooden shield", "wooden helmet"],
+          shopWeapon: ["wooden dagger", "wooden sword"],
+        },
+        {
+          name: "Kodon",
+          shopItem: ["super potion", "super antidote"],
+          shopArmor: ["bronze shield", "bronze helmet"],
+          shopWeapon: ["bronze dagger", "bronze sword"],
+        },
+        {
+          name: "Broria",
+          shopItem: ["great potion", "great antidote"],
+          shopArmor: ["iron shield", "iron helmet"],
+          shopWeapon: ["iron dagger", "iron sword"],
+        },
+        {
+          name: "Tarlens",
+          shopItem: ["ultra potion", "ultra antidote"],
+          shopArmor: ["silver shield", "silver helmet"],
+          shopWeapon: ["silver dagger", "silver sword"],
+        },
+        {
+          name: "Wrenchester",
+          shopItem: ["mega potion", "mega antidote"],
+          shopArmor: ["diamond shield", "diamond helmet"],
+          shopWeapon: ["diamond dagger", "diamond sword"],
+        },
+      ],
+    };
   },
-  components: {},
+  components: { MainWindow },
   methods: {
-    openCity() {
-      this.$emit("open");
+    showCity(city) {
+      console.log(city);
+      this.currentCity = city;
+      this.openCity = !this.openCity;
     },
+    // openCity() {
+    //   this.$emit("open");
+    // },
+    // leaveCity() {
+    //   this.showCity = true;
+    // },
   },
 };
 </script>
