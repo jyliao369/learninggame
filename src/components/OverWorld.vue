@@ -12,18 +12,22 @@
     <InvenBag v-if="showInventory" />
 
     <!-- HERO INFO -->
-    <!-- <HeroInfo v-if="showHeroStats" v-bind:heroInfo="this.hero" /> -->
+    <StatInfo v-if="showStats" v-bind:heroInfo="this.hero" />
 
     <!-- ENEMY INFO -->
     <!-- <EnemyInfo v-if="showEnemyStats" /> -->
 
     <!-- TEXTBOX -->
-    <TextBox v-if="showTextBox" v-bind:heroInfo="this.hero" />
+    <TextBox
+      v-if="showTextBox"
+      v-bind:heroInfo="this.hero"
+      @flee="showEnemyInfo"
+    />
 
     <div class="class">
       <button @click="showEnemyInfo">battle</button>
       <button @click="showInvenBag">inventory</button>
-      <button @click="showHeroInfo">stats</button>
+      <button @click="showHeroStats">stats</button>
       <button @click="reset">back</button>
     </div>
   </div>
@@ -33,7 +37,7 @@
 import InvenBag from "./InvenBag.vue";
 import CityMap from "./CityMap.vue";
 import MainWindow from "./MainWindow.vue";
-// import HeroInfo from "./HeroInfo.vue";
+import StatInfo from "./StatInfo.vue";
 // import EnemyInfo from "./EnemyInfo.vue";
 import TextBox from "./TextBox.vue";
 
@@ -43,13 +47,15 @@ export default {
       showInventory: false,
       showCityMap: true,
       showMainWindow: false,
-      showHeroStats: false,
+      showStats: false,
       showEnemyStats: false,
       showTextBox: false,
 
       hero: {
         name: "hero",
         hp: 20,
+        mp: 10,
+        gold: 0,
       },
     };
   },
@@ -57,7 +63,7 @@ export default {
     InvenBag,
     CityMap,
     MainWindow,
-    // HeroInfo,
+    StatInfo,
     // EnemyInfo,
     TextBox,
   },
@@ -73,8 +79,8 @@ export default {
       this.showCityMap = !this.showCityMap;
       this.showMainWindow = !this.showMainWindow;
     },
-    showHeroInfo() {
-      this.showHeroStats = !this.showHeroStats;
+    showHeroStats() {
+      this.showStats = !this.showStats;
     },
     showEnemyInfo() {
       this.showTextBox = !this.showTextBox;

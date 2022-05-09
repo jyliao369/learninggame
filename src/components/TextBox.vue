@@ -2,8 +2,9 @@
   <div class="heroInfoCont">
     <div>
       <div class="heroInfo">
-        <h2>{{ heroInfo.name }}</h2>
-        <h2>HP: {{ heroInfo.hp }}</h2>
+        <h2>{{ hero.name }}</h2>
+        <h2>HP: {{ hero.hp }}</h2>
+        <h2>MP: {{ hero.mp }}</h2>
       </div>
     </div>
   </div>
@@ -68,7 +69,7 @@
           <button @click="skill">Skills</button>
           <button @click="magic">Magic</button>
           <button @click="flee">Flee</button>
-          <button @click="test">test</button>
+          <button @click="giveCoin">test</button>
         </div>
       </div>
     </div>
@@ -98,6 +99,8 @@ export default {
         { name: "wolf", hp: 20 },
         { name: "vulture", hp: 20 },
       ],
+
+      hero: this.heroInfo,
     };
   },
   components: {},
@@ -125,10 +128,11 @@ export default {
       if (this.target === number) {
         console.log("Correct");
         this.showSyllableQ = !this.showSyllableQ;
-        this.$emit("enemyDamage");
+        this.damage("Correct");
       } else {
         console.log("Incorrect");
         this.showSyllableQ = !this.showSyllableQ;
+        this.damage("Incorrect");
       }
     },
     skill() {
@@ -162,14 +166,51 @@ export default {
       this.showSyllableQ = false;
       this.showPartOfSpeechQ = false;
     },
+
+    flee() {
+      this.$emit("flee");
+    },
+    damage(answer) {
+      if (answer === "Correct") {
+        this.enemyTeam[0].hp -= 5;
+        this.checkEnemy();
+      } else if (answer === "Incorrect") {
+        this.hero.hp -= 5;
+        this.checkPlayer();
+      }
+    },
+    checkEnemy() {
+      console.log(this.enemyTeam[0].hp);
+      if (this.enemyTeam[0].hp <= 0) {
+        this.enemyTeam.pop();
+      }
+
+      if (this.enemyTeam.length <= 0) {
+        this.giveCoin();
+      }
+    },
+    checkPlayer() {
+      if (this.hero.hp <= 0) {
+        console.log("GAME OVER");
+      }
+    },
+    giveCoin() {
+      this.hero.gold += 5;
+    },
   },
   created() {
     // let randomWords = require("random-words");
     // let word = randomWords();
     // this.prompt = `How many syllables does ${word.toUpperCase()} have?`;
-    this.enemyTeam = [
-      this.enemies[Math.floor(Math.random() * this.enemies.length)],
-    ];
+    // this.enemyTeam = [
+    //   this.enemies[Math.floor(Math.random() * this.enemies.length)],
+    // ];
+    let team = JSON.parse(
+      JSON.stringify(
+        this.enemies[Math.floor(Math.random() * this.enemies.length)]
+      )
+    );
+    this.enemyTeam = [team];
   },
 };
 </script>
