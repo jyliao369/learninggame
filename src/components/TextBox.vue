@@ -25,6 +25,18 @@
   <div class="textBoxCont">
     <div class="textBoxBorder">
       <div class="textBox">
+        <!-- CHOICES FOR SKILLS / MAGIC -->
+        <div class="skillChoices" v-if="showSkills">
+          <button @click="skill">Skill Lvl. 1</button>
+          <button @click="skillTwo">Skill Lvl. 2</button>
+          <button>Skill Lvl. 3</button>
+        </div>
+        <div class="magicChoices" v-if="showMagic">
+          <button @click="magic">Magic Lvl. 1</button>
+          <button @click="magicTwo">Magic Lvl. 2</button>
+          <button @click="magicThree">Magic Lvl. 3</button>
+        </div>
+
         <!-- SYLLABLE COUNT FOR ATTACK -->
         <div class="questionCont" v-if="showSyllableQ">
           <div>
@@ -54,22 +66,39 @@
           </div>
         </div>
 
+        <!-- PART OF SPEECH SENTENCE -->
+        <div class="questionCont" v-if="showSentenceQ">
+          <div>
+            <h2>{{ prompt }}</h2>
+          </div>
+          <div class="sentenceCont">
+            <p
+              v-for="(word, index) in this.mainSentence"
+              :key="index"
+              @click="sentenceCheck(word)"
+            >
+              {{ word }}
+            </p>
+            <p></p>
+          </div>
+        </div>
+
         <!-- ADDITION/SUBTRACTION COUNT FOR MAGIC -->
         <div class="questionCont" v-if="showMathQ">
           <div class="mathAnswer">
             <h2>{{ prompt }}</h2>
-            <input input v-model="answer" type="number" placeholder="Answer" />
-            <button @click="checkMathQuestion">Check</button>
+            <input v-model="answer" type="number" placeholder="Answer" />
+            <button @click="checkMagic">Check</button>
           </div>
         </div>
 
         <!-- THIS IS THE ACTION BAR -->
         <div class="actionBar">
           <button @click="attack">Attack</button>
-          <button @click="skill">Skills</button>
-          <button @click="magic">Magic</button>
+          <button @click="showAllSkills">Skills</button>
+          <button @click="showAllMagic">Magic</button>
           <button @click="flee">Flee</button>
-          <button @click="giveCoin">test</button>
+          <!-- <button @click="giveCoin">test</button> -->
         </div>
       </div>
     </div>
@@ -77,17 +106,23 @@
 </template>
 
 <script>
+const { sentence } = require("txtgen/dist/cjs/txtgen.js");
+
 export default {
   props: ["heroInfo"],
   data() {
     return {
       showSyllableQ: false,
       showPartOfSpeechQ: false,
+      showSentenceQ: false,
       showMathQ: false,
+      showSkills: false,
+      showMagic: false,
 
       prompt: "",
       wordBank: [],
       target: "",
+      mainSentence: "",
 
       enemyTeam: [],
       enemies: [
@@ -135,6 +170,15 @@ export default {
         this.damage("Incorrect");
       }
     },
+    showAllSkills() {
+      this.showSkills = !this.showSkills;
+      this.showMagic = false;
+
+      this.showSyllableQ = false;
+      this.showPartOfSpeechQ = false;
+      this.showSentenceQ = false;
+      this.showMathQ = false;
+    },
     skill() {
       let randomWords = require("random-words");
       this.wordBank = randomWords(4);
@@ -143,8 +187,68 @@ export default {
         pOfSpeech[Math.floor(Math.random() * pOfSpeech.length)]
       }?`;
 
+      this.showSkills = !this.showSkills;
       this.showPartOfSpeechQ = !this.showPartOfSpeechQ;
       this.showSyllableQ = false;
+      this.showMathQ = false;
+    },
+    skillTwo() {
+      let pOfSpeech = ["noun", "verb", "adjective", "adverb"];
+      let targetPartofS =
+        pOfSpeech[Math.floor(Math.random() * pOfSpeech.length)];
+
+      this.target = targetPartofS;
+      this.prompt = `Find a(n) ${targetPartofS} in this sentence?`;
+      this.mainSentence = sentence().split(" ");
+
+      this.showSkills = !this.showSkills;
+      this.showSentenceQ = !this.showSentenceQ;
+      this.showSyllableQ = false;
+      this.showMathQ = false;
+    },
+    sentenceCheck(word) {
+      let mainWord = word
+        .split("")
+        .filter(
+          (char) =>
+            char !== "," &&
+            char !== "!" &&
+            char !== "?" &&
+            char !== "." &&
+            char !== ";"
+        )
+        .join("");
+      // console.log(mainWord);
+      // console.log(this.target);
+
+      fetch(
+        `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${mainWord}?key=${process.env.VUE_APP_DICTION_KEY}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log(data);
+          for (let a = 0; a < data.length; a++) {
+            if (data[a].fl === this.target) {
+              this.damage("Correct");
+              this.showSentenceQ = false;
+              break;
+            }
+            if (a === data.length - 1) {
+              this.damage("Incorrect");
+              this.showSentenceQ = false;
+              break;
+            }
+          }
+        });
+    },
+    // THESE ARE FOR ALL MAGIC/MATH
+    showAllMagic() {
+      this.showMagic = !this.showMagic;
+      this.showSkills = false;
+
+      this.showSyllableQ = false;
+      this.showPartOfSpeechQ = false;
+      this.showSentenceQ = false;
       this.showMathQ = false;
     },
     magic() {
@@ -162,11 +266,68 @@ export default {
         this.prompt = valueA + " / " + valueB + " = ";
       }
 
+      this.showMagic = !this.showMagic;
       this.showMathQ = !this.showMathQ;
       this.showSyllableQ = false;
       this.showPartOfSpeechQ = false;
     },
+    magicTwo() {
+      let topic = Math.floor(Math.random() * 4);
+      let valueA = (Math.random() * 0.9).toFixed(1);
+      let valueB = (Math.random() * 0.9).toFixed(1);
 
+      if (topic === 0) {
+        this.prompt = valueA + " + " + valueB + " = ";
+      } else if (topic === 1) {
+        this.prompt = valueA + " - " + valueB + " = ";
+      } else if (topic === 2) {
+        this.prompt = valueA + " * " + valueB + " = ";
+      } else if (topic === 3) {
+        this.prompt = valueA + " / " + valueB + " = ";
+      }
+
+      this.showMagic = !this.showMagic;
+      this.showMathQ = !this.showMathQ;
+      this.showSyllableQ = false;
+      this.showPartOfSpeechQ = false;
+    },
+    magicThree() {
+      let topic = Math.floor(Math.random() * 4);
+      let valueA = `1 / ${Math.floor(Math.random() * 9)}`;
+      let valueB = `1 / ${Math.floor(Math.random() * 9)}`;
+
+      if (topic === 0) {
+        this.prompt = valueA + " + " + valueB + " = ";
+      } else if (topic === 1) {
+        this.prompt = valueA + " - " + valueB + " = ";
+      } else if (topic === 2) {
+        this.prompt = valueA + " * " + valueB + " = ";
+      } else if (topic === 3) {
+        this.prompt = valueA + " / " + valueB + " = ";
+      }
+
+      this.showMagic = !this.showMagic;
+      this.showMathQ = !this.showMathQ;
+      this.showSyllableQ = false;
+      this.showPartOfSpeechQ = false;
+    },
+    magicFour() {},
+    checkMagic() {
+      let mathAnswer = eval(
+        this.prompt
+          .split(" ")
+          .slice(0, this.prompt.split(" ").length - 2)
+          .join("")
+      );
+      console.log(mathAnswer);
+      if (this.answer === mathAnswer) {
+        this.showMathQ = !this.showMathQ;
+        this.damage("Correct");
+      } else {
+        this.showMathQ = !this.showMathQ;
+        this.damage("Incorrect");
+      }
+    },
     flee() {
       this.$emit("flee");
     },
@@ -180,7 +341,6 @@ export default {
       }
     },
     checkEnemy() {
-      console.log(this.enemyTeam[0].hp);
       if (this.enemyTeam[0].hp <= 0) {
         this.enemyTeam.pop();
       }
@@ -276,18 +436,14 @@ export default {
   background: black;
   margin: 7px;
 }
-.actionBar {
-  width: 25%;
+.magicChoices,
+.skillChoices {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  color: white;
+  flex-direction: column;
 }
-.actionBar button {
-  width: 225px;
-  font-size: 25px;
-  padding: 5px;
-  padding-left: 15px;
-  padding-right: 15px;
-  cursor: pointer;
-}
-
 .questionCont {
   display: flex;
   flex-direction: column;
@@ -305,10 +461,6 @@ export default {
   padding: 5px;
   margin: 10px;
 }
-.mathAnswer {
-  display: flex;
-  flex-direction: row;
-}
 .wordBank {
   display: flex;
   flex-direction: row;
@@ -320,5 +472,30 @@ export default {
   font-size: 20px;
   padding: 5px;
   margin: 10px;
+}
+.sentenceCont {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.sentenceCont p {
+  margin-left: 5px;
+  font-size: 18px;
+}
+.mathAnswer {
+  display: flex;
+  flex-direction: row;
+}
+
+.actionBar {
+  width: 25%;
+}
+.actionBar button {
+  width: 225px;
+  font-size: 25px;
+  padding: 5px;
+  padding-left: 15px;
+  padding-right: 15px;
+  cursor: pointer;
 }
 </style>

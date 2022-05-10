@@ -83,19 +83,24 @@ export default {
   height: 80vh;
   width: 65%;
   border-style: solid;
-  border-width: 2px;
+  border-width: 4px;
   background: white;
+  padding: 8px;
 }
 .mainWindow {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
+  height: 99%;
+  border-style: solid;
+  border-width: 2.5px;
   position: relative;
+  background: black;
 }
 .citySign {
   position: absolute;
+  color: white;
 }
 .shopWindow {
   display: flex;
@@ -111,6 +116,9 @@ export default {
   height: 250px;
   width: 225px;
   border-style: solid;
+  border-color: white;
+  border-width: 4px;
+  border-radius: 2%;
   position: absolute;
   padding: 10px;
 }
@@ -119,6 +127,7 @@ export default {
 .shopWeapon p {
   font-size: 20px;
   padding: 7px;
+  color: white;
 }
 .townChoice {
   display: flex;
